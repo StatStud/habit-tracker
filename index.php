@@ -8,6 +8,7 @@
 	<div id="header">
 		<h1>My Habits <h1>
 		<h2 id="date-time"></h2>
+		<h2><?php echo date("Y-m-d"); ?></h2>
 		<script>
 			//document.getElementById("date-time").innerHTML = Date();
 			var d = new Date();
@@ -69,23 +70,77 @@
 		<button id="delete-button" onclick="deleteHabit()">Delete Habit</button>
 	</div>
 	<script>
-		function updateStatus(checkbox, id) {
-			if (checkbox.checked) {
-				var status = "completed";
-			} else {
-                var status = "pending";
-			}
+		function updateStatus() {
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				location.reload();
+				if (this.readyState == 4 && this.status == 200) {
+					var habits = JSON.parse(this.responseText);
+					for (var i = 0; i < habits.length; i++) {
+						var habit = habits[i];
+						var id = habit['id'];
+						var status = habit['status'];
+						var last_completion = habit['last_completion'];
+						// get current date and time
+						var current_date = new Date();
+						// convert last completion date to javascript date object
+						var last_completion_date = new Date(last_completion);
+						// compare current date to last completion date
+						if (current_date.getDate() == last_completion_date.getDate() && 
+						current_date.getMonth() == last_completion_date.getMonth() && 
+						current_date.getYear() == last_completion_date.getYear()) {
+							// if same date, update status to completed
+							updateHabitStatus(id, "completed");
+						} else {
+							// if different date, update status to pending
+							updateHabitStatus(id, "pending");
+						}
+						}
+						}
+						};
+						xhttp.open("GET", "get_habits.php", true);
+						xhttp.send();
+		}
+
+		function moveHabit(id, status) {
+			var habit = document.getElementById("habit-" + id);
+			if (status == "completed") {
+				document.getElementById("completed-habits").appendChild(habit);
+			} else {
+				document.getElementById("pending-habits").appendChild(habit);
+			}
+		}
+
+		function updateHabitStatus(id, status) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					// update habit status on page
+					var checkbox = document.getElementById("checkbox-" + id);
+					if (checkbox) {
+						if (status == "completed") {
+							checkbox.checked = true;
+							checkbox.parentNode.style.color = "green";
+							moveHabit(id, "completed");
+						} else {
+							checkbox.checked = false;
+							checkbox.parentNode.style.color = "red";
+							moveHabit(id, "pending");
+						}
+					}
 				}
-				};
+			};
 			xhttp.open("POST", "update_status.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.send("id=" + id + "&status=" + status);
 			}
 
+
+
+		// update status of habits on page load
+		updateStatus();
+
+		// update status of habits every 24 hours
+		setInterval(updateStatus, 86400000);
 
 		function displayInfo(id) {
 			var habitInfo = document.getElementById("habit-info");
