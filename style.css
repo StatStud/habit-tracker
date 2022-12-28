@@ -1,0 +1,31 @@
+#header {
+    text-align: center;
+    }
+    
+    #habit-list {
+    display: flex;
+    flex-direction: column;
+    }
+    
+    .habit {
+    display: flex;
+    align-items: center;
+    }
+    
+    .habit-name {
+    margin-left: 10px;
+    }
+    
+    #add-habit-form {
+    display: none;
+    }
+    
+    #habit-info {
+    display: none;
+    }
+    
+    #add-habit-button {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    }
